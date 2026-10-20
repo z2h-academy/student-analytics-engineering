@@ -14,13 +14,13 @@ COMPOSE := docker compose
 DBT_RUN := $(COMPOSE) --profile tools run --rm
 
 LEVEL ?= 5
-PROJECT_DIR := nivel-$(LEVEL)/dbt_project
+PROJECT_DIR := level-$(LEVEL)/dbt_project
 # El bootstrap crea warehouse/rol/base/schemas: requiere un rol con
 # privilegios de cuenta (el owner del trial). El resto de los labs
 # corre con AE_ROLE (mínimo privilegio).
 BOOTSTRAP_ROLE ?= ACCOUNTADMIN
 
-.PHONY: help env profiles build up down ps logs \
+.PHONY: help env venv profiles build up down ps logs \
         dbt-parse dbt-build dbt-test dbt-snapshot dbt-docs dbt-docs-serve \
         mf-validate \
         level0-bootstrap level0-upload level0-sql semantic-view \
@@ -28,6 +28,7 @@ BOOTSTRAP_ROLE ?= ACCOUNTADMIN
 
 help:
 	@echo "AE-2026 — targets disponibles:"
+	@echo "  make venv                       Crea .venv e instala requirements (modo local)"
 	@echo "  make build                      Construir imagen dbt (Dockerfile.dbt)"
 	@echo "  make up / down / ps / logs      Metabase + Postgres de metadata"
 	@echo "  make dbt-parse  LEVEL=5         dbt parse (parser v2 por flags)"
@@ -47,17 +48,20 @@ help:
 
 env:
 	@test -f .env || (cp .env.example .env && chmod 600 .env && \
-	  echo "Creado .env desde .env.example — completar las credenciales Snowflake.")
+	  echo "Creado .env desde .env.example — completa las credenciales Snowflake.")
 
-# Solo toca los niveles que ya tienen proyecto dbt: el repo arranca sin
-# labs y los niveles se crean a medida que avanza el roadmap.
+venv:
+	@test -d .venv || python3 -m venv .venv
+	.venv/bin/python -m pip install --upgrade pip
+	.venv/bin/pip install -r requirements.txt
+	@.venv/bin/python -c "import sys; print('venv:', sys.prefix)"
+
 profiles: env
 	@for lvl in 1 2 3 4 5; do \
-	  proj=nivel-$$lvl/dbt_project; \
-	  [ -d "$$proj" ] || continue; \
-	  if [ ! -f "$$proj/profiles.yml" ]; then \
-	    cp "$$proj/profiles.yml.example" "$$proj/profiles.yml"; \
-	    echo "profiles.yml creado para nivel-$$lvl"; \
+	  [ -d "level-$$lvl/dbt_project" ] || continue; \
+	  if [ ! -f level-$$lvl/dbt_project/profiles.yml ]; then \
+	    cp level-$$lvl/dbt_project/profiles.yml.example level-$$lvl/dbt_project/profiles.yml; \
+	    echo "profiles.yml creado para level-$$lvl"; \
 	  fi; \
 	done
 
@@ -102,26 +106,26 @@ mf-validate: profiles
 	  dbt mf validate-configs
 
 level0-bootstrap: env
-	$(DBT_RUN) dbt python nivel-0/scripts/run_sql.py nivel-0/sql/00_bootstrap.sql --role $(BOOTSTRAP_ROLE)
+	$(DBT_RUN) dbt python level-0/scripts/run_sql.py level-0/sql/00_bootstrap.sql --role $(BOOTSTRAP_ROLE)
 
 level0-upload: env
-	$(DBT_RUN) dbt python nivel-0/scripts/01_upload_taxi.py
+	$(DBT_RUN) dbt python level-0/scripts/01_upload_taxi.py
 
 level0-sql: env
-	@test -n "$(SQL)" || (echo "Uso: make level0-sql SQL=nivel-0/sql/01_grano.sql"; exit 1)
-	$(DBT_RUN) dbt python nivel-0/scripts/run_sql.py $(SQL)
+	@test -n "$(SQL)" || (echo "Uso: make level0-sql SQL=level-0/sql/01_grano.sql"; exit 1)
+	$(DBT_RUN) dbt python level-0/scripts/run_sql.py $(SQL)
 
 semantic-view: env
-	$(DBT_RUN) dbt python nivel-0/scripts/run_sql.py nivel-4/sql/00_semantic_view.sql
+	$(DBT_RUN) dbt python level-0/scripts/run_sql.py level-4/sql/00_semantic_view.sql
 
 metabase-setup: up profiles
-	$(DBT_RUN) -e METABASE_URL=http://metabase:3000 dbt python nivel-4/scripts/02_metabase_setup.py
+	$(DBT_RUN) -e METABASE_URL=http://metabase:3000 dbt python level-4/scripts/02_metabase_setup.py
 
 contract: env
-	$(DBT_RUN) dbt python nivel-5/scripts/03_validate_contract.py nivel-5/contracts/fct_taxi_trips.yml
+	$(DBT_RUN) dbt python level-5/scripts/03_validate_contract.py level-5/contracts/fct_taxi_trips.yml
 
 monitoring: env
-	$(DBT_RUN) dbt python nivel-5/scripts/04_monitoring.py
+	$(DBT_RUN) dbt python level-5/scripts/04_monitoring.py
 
 clean:
-	rm -rf nivel-*/dbt_project/target nivel-*/dbt_project/logs nivel-*/dbt_project/dbt_packages
+	rm -rf level-*/dbt_project/target level-*/dbt_project/logs level-*/dbt_project/dbt_packages

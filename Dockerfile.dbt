@@ -1,6 +1,6 @@
 # ============================================================
 # AE-2026 · imagen de herramientas (dbt + MetricFlow + Snowflake)
-# Se construye desde la raíz del módulo:
+# Se construye desde la raíz del repo:
 #   docker compose build dbt
 # El repo se monta como volumen en /usr/app (no se hornea en la
 # imagen): el contenedor ve los cambios de los labs sin rebuild.

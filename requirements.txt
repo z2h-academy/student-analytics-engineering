@@ -15,10 +15,10 @@ snowflake-connector-python==4.7.5
 # Carga de variables de entorno (.env con las claves SNOWFLAKE_*).
 python-dotenv==1.2.2
 
-# Nivel 4/5 — Semantic Layer y validador de contratos.
+# Level 4/5 — Semantic Layer y validador de contratos.
 # dbt-metricflow trae MetricFlow OSS (Apache 2.0); sin pin, una
 # actualización menor puede cambiar el manifest semántico.
 dbt-metricflow[dbt-snowflake]==0.15.0
 
-# Nivel 5 — lectura del contrato YAML en scripts/03_validate_contract.py.
+# Level 5 — lectura del contrato YAML en scripts/03_validate_contract.py.
 PyYAML==6.0.3

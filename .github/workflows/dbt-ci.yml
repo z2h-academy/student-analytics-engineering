@@ -34,7 +34,7 @@ jobs:
       - name: Ruff (scripts de los niveles)
         run: |
           shopt -s nullglob
-          files=(nivel-*/scripts/*.py)
+          files=(level-*/scripts/*.py)
           if [ ${#files[@]} -eq 0 ]; then
             echo "Sin scripts Python todavía: se omite ruff."
             exit 0
@@ -44,7 +44,7 @@ jobs:
       - name: SQLFluff parse (SQL puro del nivel 0)
         run: |
           shopt -s nullglob
-          files=(nivel-*/sql/*.sql)
+          files=(level-*/sql/*.sql)
           if [ ${#files[@]} -eq 0 ]; then
             echo "Sin SQL todavía: se omite SQLFluff."
             exit 0
@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           found=0
-          for proj in nivel-*/dbt_project; do
+          for proj in level-*/dbt_project; do
             [ -f "$proj/dbt_project.yml" ] || continue
             found=1
             echo "== parse $proj =="
@@ -120,7 +120,7 @@ jobs:
         run: |
           set -euo pipefail
           found=0
-          for proj in nivel-*/dbt_project; do
+          for proj in level-*/dbt_project; do
             [ -f "$proj/dbt_project.yml" ] || continue
             found=1
             echo "== build $proj =="

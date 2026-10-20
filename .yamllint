@@ -4,9 +4,9 @@ ignore: |
   .git/
   .venv/
   venv/
-  nivel-*/dbt_project/target/
-  nivel-*/dbt_project/logs/
-  nivel-*/dbt_project/dbt_packages/
+  level-*/dbt_project/target/
+  level-*/dbt_project/logs/
+  level-*/dbt_project/dbt_packages/
 
 rules:
   line-length:

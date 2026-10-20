@@ -13,7 +13,7 @@ dbt_packages/
 dbt_packages.yml
 
 # Secretos: nunca se commitean. Las claves SNOWFLAKE_* viven en
-# /workspaces/modulo-sql-cloud/.env (fuera de este repo).
+# .env en la raíz del repo (gitignored).
 .env
 .env.*
 !.env.example
@@ -25,7 +25,7 @@ profiles.yml
 # (TLC) y se sube a un stage de Snowflake; no se versiona.
 data/*.parquet
 data/*.csv.gz
-nivel-0/data/
+level-0/data/
 
 # Notebooks Jupyter (checkpoints).
 .ipynb_checkpoints/
