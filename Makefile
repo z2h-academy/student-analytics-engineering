@@ -47,12 +47,16 @@ help:
 
 env:
 	@test -f .env || (cp .env.example .env && chmod 600 .env && \
-	  echo "Creado .env desde .env.example — completá las credenciales Snowflake.")
+	  echo "Creado .env desde .env.example — completar las credenciales Snowflake.")
 
+# Solo toca los niveles que ya tienen proyecto dbt: el repo arranca sin
+# labs y los niveles se crean a medida que avanza el roadmap.
 profiles: env
 	@for lvl in 1 2 3 4 5; do \
-	  if [ ! -f nivel-$$lvl/dbt_project/profiles.yml ]; then \
-	    cp nivel-$$lvl/dbt_project/profiles.yml.example nivel-$$lvl/dbt_project/profiles.yml; \
+	  proj=nivel-$$lvl/dbt_project; \
+	  [ -d "$$proj" ] || continue; \
+	  if [ ! -f "$$proj/profiles.yml" ]; then \
+	    cp "$$proj/profiles.yml.example" "$$proj/profiles.yml"; \
 	    echo "profiles.yml creado para nivel-$$lvl"; \
 	  fi; \
 	done
