@@ -1,0 +1,95 @@
+# ============================================================
+# AE-2026 · infraestructura del módulo Analytics Engineering
+# Se levanta desde la RAÍZ del módulo y da servicio a todos los
+# niveles. No hay un compose por nivel: el nivel se elige con
+#   make dbt-build LEVEL=3
+#   make dbt-parse LEVEL=5
+#
+# Servicios:
+#   dbt          imagen de herramientas (Python + dbt + MetricFlow)
+#                perfil "tools": no arranca con `up`, se usa con `run`.
+#   metabase-db  Postgres 16 con la metadata de Metabase (NO H2).
+#   metabase     BI en http://localhost:3001 (imagen pinneada).
+#
+# Snowflake es el warehouse (cloud); este compose NO levanta un
+# warehouse local. Las credenciales viven en .env (gitignored).
+# ============================================================
+name: ae2026
+
+x-dbt-env: &dbt-env
+  DBT_PROFILES_DIR: /usr/app
+
+services:
+  dbt:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
+      args:
+        UID: ${AE_UID:-1000}
+        GID: ${AE_GID:-1000}
+    image: ae2026/dbt:1.12
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      <<: *dbt-env
+    volumes:
+      - .:/usr/app
+    working_dir: /usr/app
+    command: ["dbt", "--version"]
+    tty: true
+    stdin_open: true
+
+  metabase-db:
+    image: postgres:16-alpine
+    container_name: ae2026-metabase-db
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: ${MB_DB_PASS:-metabase}
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d metabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  metabase:
+    image: metabase/metabase:v0.64.2.9
+    container_name: ae2026-metabase
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      # Metadata en Postgres (producción). H2 solo sirve para demos
+      # efímeras: el archivo vive junto al JAR y se pierde al borrar
+      # el contenedor.
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${MB_DB_PASS:-metabase}
+      MB_DB_HOST: metabase-db
+      MB_SITE_URL: ${MB_SITE_URL:-http://localhost:3001}
+      MB_SITE_NAME: ${MB_SITE_NAME:-AE-2026 Analytics}
+      MB_ENCRYPTION_SECRET_KEY: ${MB_ENCRYPTION_SECRET_KEY:-ae2026-change-me-32-bytes-secret}
+      JAVA_TIMEZONE: America/New_York
+    volumes:
+      - metabase_plugins:/plugins
+    healthcheck:
+      # La imagen oficial trae curl; /api/health responde 200 cuando
+      # la app terminó de inicializar.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  metabase_db_data:
+  metabase_plugins:

@@ -1,0 +1,24 @@
+# Módulo Analytics Engineering (AE-2026) — Snowflake + dbt
+# Versiones fijadas: último estable verificado en PyPI (2026-10).
+#
+# dbt Core 1.12 es la última línea 1.x; el proyecto ya se valida con
+# `dbt parse --use-v2-parser` y declara `flags.use_v2_parser: true`
+# para preparar la migración a dbt v2 (Fusion).
+dbt-core==1.12.6
+dbt-snowflake==1.12.3
+
+# Carga de NYC Taxi: PUT (stage interno) + COPY INTO.
+# (dbt-snowflake trae su propio snowflake-connector; fijamos uno estable
+# para que el script upload_taxi.py sea reproducible.)
+snowflake-connector-python==4.7.5
+
+# Carga de variables de entorno (.env con las claves SNOWFLAKE_*).
+python-dotenv==1.2.2
+
+# Nivel 4/5 — Semantic Layer y validador de contratos.
+# dbt-metricflow trae MetricFlow OSS (Apache 2.0); sin pin, una
+# actualización menor puede cambiar el manifest semántico.
+dbt-metricflow[dbt-snowflake]==0.15.0
+
+# Nivel 5 — lectura del contrato YAML en scripts/03_validate_contract.py.
+PyYAML==6.0.3

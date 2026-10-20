@@ -1,0 +1,15 @@
+# Artefactos regenerables y secretos: nunca entran a la imagen.
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.*
+profiles.yml
+**/target
+**/logs
+**/dbt_packages
+nivel-0/data
+*.parquet

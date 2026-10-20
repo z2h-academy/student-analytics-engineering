@@ -1,0 +1,34 @@
+# Entornos virtuales (uno por sesión; se recrean con requirements.txt).
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Artefactos de build de dbt (regenerables).
+target/
+logs/
+dbt_packages/
+dbt_packages.yml
+
+# Secretos: nunca se commitean. Las claves SNOWFLAKE_* viven en
+# /workspaces/modulo-sql-cloud/.env (fuera de este repo).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+profiles.yml
+
+# Datos pesados: el parquet de NYC Taxi se descarga de la fuente oficial
+# (TLC) y se sube a un stage de Snowflake; no se versiona.
+data/*.parquet
+data/*.csv.gz
+nivel-0/data/
+
+# Notebooks Jupyter (checkpoints).
+.ipynb_checkpoints/
+
+# Artefacto de dbt con id de usuario anónimo.
+.user.yml

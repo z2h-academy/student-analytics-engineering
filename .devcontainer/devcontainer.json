@@ -1,0 +1,54 @@
+{
+  "name": "AE-2026 · Analytics Engineering",
+
+  // Imagen base con Python 3.12 (el runtime de dbt 1.12). La imagen
+  // de herramientas (dbt + MetricFlow) se construye aparte con
+  // `make build` y se usa a través de docker compose.
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+
+  "remoteUser": "vscode",
+
+  "features": {
+    // Docker dentro del Codespace: los labs corren con `docker compose`
+    // (servicio `dbt` con el perfil `tools`).
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+
+  "runArgs": ["--privileged"],
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "redhat.vscode-yaml",
+        "dorzey.vscode-sqlfluff",
+        "innoverio.vscode-dbt-power-user"
+      ]
+    }
+  },
+
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true
+  },
+
+  // 3001 = Metabase; 8088 = `make dbt-docs-serve`.
+  "forwardPorts": [3001, 8088],
+  "portsAttributes": {
+    "3001": { "label": "Metabase" },
+    "8088": { "label": "dbt docs" }
+  },
+
+  // Herramientas de lint/format en el host del Codespace. dbt no se
+  // instala acá: vive en la imagen `ae2026/dbt:1.12`.
+  "postCreateCommand": "python -m pip install --user -r requirements-dev.txt",
+
+  "postAttachCommand": "docker compose version"
+}
