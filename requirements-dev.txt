@@ -1,6 +1,0 @@
-# Herramientas de desarrollo y CI (no van a la imagen dbt).
-ruff>=0.9,<1
-sqlfluff>=3.4,<4
-sqlfluff-templater-dbt>=3.4,<4
-pre-commit>=4,<5
-yamllint>=1.35,<2

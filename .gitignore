@@ -25,10 +25,25 @@ profiles.yml
 # (TLC) y se sube a un stage de Snowflake; no se versiona.
 data/*.parquet
 data/*.csv.gz
-level-0/data/
+level-*/data/
 
 # Notebooks Jupyter (checkpoints).
 .ipynb_checkpoints/
 
 # Artefacto de dbt con id de usuario anónimo.
 .user.yml
+
+# Infraestructura de referencia de TUTOR: se crea en runtime y no se
+# versiona en el workspace del alumno.
+Dockerfile.dbt
+docker-compose.yml
+Makefile
+requirements.txt
+requirements-dev.txt
+pyproject.toml
+.env.example
+.pre-commit-config.yaml
+.sqlfluff
+.yamllint
+.dockerignore
+.devcontainer/
